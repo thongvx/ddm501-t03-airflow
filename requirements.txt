@@ -16,7 +16,10 @@ pyarrow==14.0.2
 # Flask/SQLAlchemy/alembic, which would fight the versions Airflow pins above.
 # Same MLflow and scikit-learn pins as Tutorial 02.
 #
-# Without a tracking server the DAG writes to ./mlruns, which `mlflow ui`
-# can read. To get the server instead, use the Docker route.
+# These are the client only. The train task needs a tracking server listening on
+# http://127.0.0.1:5000 -- it does not fall back to a local folder, on purpose,
+# because a run written somewhere the open UI is not reading is a run you have
+# lost. Either start one (`pip install mlflow==2.19.0 && mlflow server`) or take
+# the Docker route, which brings its own.
 mlflow-skinny==2.19.0
 scikit-learn==1.6.0

@@ -33,8 +33,9 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
-      # Read by the train task. Unset (the local venv route) means the DAG
-      # falls back to a ./mlruns folder instead of a server.
+      # Read by the train task. Without it the DAG's own default applies, which
+      # is 127.0.0.1:5000 -- correct for the local venv route, but inside this
+      # container that address is the container itself, not the server below.
       MLFLOW_TRACKING_URI: http://mlflow:5000
       # MLflow tags each run with the current git commit if it can find one.
       # There is no git in this image, and GitPython says so at length in the
