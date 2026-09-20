@@ -1,0 +1,31 @@
+# Kiem tra tinh tuong thich Linux cua docker-compose.yml
+
+## 1. Thu tu khoi dong: airflow doi mlflow HEALTHY, khong phai chi 'started'
+ Volume ddm501-t03_mlflow-store Creating 
+ Volume ddm501-t03_mlflow-store Created 
+ Container ddm501-t03-mlflow Creating 
+ Container ddm501-t03-mlflow Created 
+ Container ddm501-t03-airflow Creating 
+ Container ddm501-t03-airflow Created 
+ Container ddm501-t03-mlflow Starting 
+ Container ddm501-t03-mlflow Started 
+ Container ddm501-t03-mlflow Waiting 
+ Container ddm501-t03-mlflow Healthy 
+ Container ddm501-t03-airflow Starting 
+ Container ddm501-t03-airflow Started 
+
+## 2. Thay the AIRFLOW_UID (cach Linux dung .env)
+$ AIRFLOW_UID=1000 docker compose config | grep user:
+    user: '1000:0'
+$ docker compose config | grep user:      # mac dinh, khong co .env
+    user: '50000:0'
+
+## 3. Container chay duoi UID thuong ghi duoc vao bind mount
+uid=1000 gid=0(root) groups=0(root)
+ghi duoc vao ./data
+
+## 4. MLflow store la named volume -> khong tao file root-owned tren host
+volume ddm501-t03_mlflow-store -> /mlflow
+
+## 5. Khong dung cu phap chi co tren Docker Desktop
+grep -E 'host.docker.internal|:cached|:delegated|platform:' -> khong match

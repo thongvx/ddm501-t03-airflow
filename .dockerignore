@@ -5,6 +5,7 @@
 logs/
 data/staging/
 data/raw/*.orig
+mlruns/
 airflow.db
 airflow-webserver.pid
 standalone_admin_password.txt

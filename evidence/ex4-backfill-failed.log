@@ -1,23 +1,24 @@
 /home/airflow/.local/lib/python3.11/site-packages/airflow/cli/commands/dag_command.py:134 RemovedInAirflow3Warning: --ignore-first-depends-on-past is deprecated as the value is always set to True
-[2026-09-20T04:24:10.285+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags
-[2026-09-20T04:24:11.240+0000] {executor_loader.py:115} INFO - Loaded executor: SequentialExecutor
-[2026-09-20T04:24:11.379+0000] {base_executor.py:146} INFO - Adding to queue: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'ingest', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmplfy5ksu0']
-[2026-09-20T04:24:16.266+0000] {sequential_executor.py:73} INFO - Executing command: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'ingest', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmplfy5ksu0']
-[2026-09-20T04:24:18.251+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/wdbc_pipeline.py
-[2026-09-20T04:24:19.024+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.ingest backfill__2026-08-26T00:00:00+00:00 [queued]> on host a6897d7ddd7d
-[2026-09-20T04:24:20.170+0000] {backfill_job_runner.py:446} INFO - [backfill progress] | finished run 0 of 1 | tasks waiting: 4 | succeeded: 1 | running: 0 | failed: 0 | skipped: 0 | deadlocked: 0 | not ready: 4
-[2026-09-20T04:24:20.199+0000] {base_executor.py:146} INFO - Adding to queue: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmpzb2p92zn']
-[2026-09-20T04:24:21.262+0000] {sequential_executor.py:73} INFO - Executing command: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmpzb2p92zn']
-[2026-09-20T04:24:23.072+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/wdbc_pipeline.py
-[2026-09-20T04:24:23.554+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]> on host a6897d7ddd7d
-[2026-09-20T04:24:24.596+0000] {backfill_job_runner.py:207} ERROR - Task instance <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [failed]> failed
-[2026-09-20T04:24:24.603+0000] {dagrun.py:774} ERROR - Marking run <DagRun wdbc_pipeline @ 2026-08-26 00:00:00+00:00: backfill__2026-08-26T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> failed
-[2026-09-20T04:24:24.605+0000] {dagrun.py:846} INFO - DagRun Finished: dag_id=wdbc_pipeline, execution_date=2026-08-26 00:00:00+00:00, run_id=backfill__2026-08-26T00:00:00+00:00, run_start_date=2026-09-20 04:24:11.307378+00:00, run_end_date=2026-09-20 04:24:24.604846+00:00, run_duration=13.297468, state=failed, external_trigger=False, run_type=backfill, data_interval_start=2026-08-26 00:00:00+00:00, data_interval_end=2026-08-27 00:00:00+00:00, dag_hash=None
-[2026-09-20T04:24:24.606+0000] {backfill_job_runner.py:446} INFO - [backfill progress] | finished run 1 of 1 | tasks waiting: 3 | succeeded: 1 | running: 0 | failed: 1 | skipped: 0 | deadlocked: 0 | not ready: 3
-[2026-09-20T04:24:24.614+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.split backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
-[2026-09-20T04:24:24.618+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.scale backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
-[2026-09-20T04:24:24.623+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.report backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
-[2026-09-20T04:24:26.272+0000] {backfill_job_runner.py:446} INFO - [backfill progress] | finished run 1 of 1 | tasks waiting: 0 | succeeded: 1 | running: 0 | failed: 4 | skipped: 0 | deadlocked: 0 | not ready: 0
+[2026-09-20T06:50:30.785+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags
+[2026-09-20T06:50:31.894+0000] {executor_loader.py:115} INFO - Loaded executor: SequentialExecutor
+[2026-09-20T06:50:32.268+0000] {base_executor.py:146} INFO - Adding to queue: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'ingest', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmpvndi9_iz']
+[2026-09-20T06:50:36.940+0000] {sequential_executor.py:73} INFO - Executing command: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'ingest', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmpvndi9_iz']
+[2026-09-20T06:50:40.149+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/wdbc_pipeline.py
+[2026-09-20T06:50:40.886+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.ingest backfill__2026-08-26T00:00:00+00:00 [queued]> on host 481e23e73354
+[2026-09-20T06:50:43.536+0000] {backfill_job_runner.py:446} INFO - [backfill progress] | finished run 0 of 1 | tasks waiting: 5 | succeeded: 1 | running: 0 | failed: 0 | skipped: 0 | deadlocked: 0 | not ready: 5
+[2026-09-20T06:50:43.590+0000] {base_executor.py:146} INFO - Adding to queue: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmp69rq31yb']
+[2026-09-20T06:50:43.665+0000] {sequential_executor.py:73} INFO - Executing command: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--depends-on-past', 'ignore', '--local', '--pool', 'default_pool', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmp69rq31yb']
+[2026-09-20T06:50:47.153+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags/wdbc_pipeline.py
+[2026-09-20T06:50:48.609+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]> on host 481e23e73354
+[2026-09-20T06:50:51.309+0000] {backfill_job_runner.py:207} ERROR - Task instance <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [failed]> failed
+[2026-09-20T06:50:51.407+0000] {backfill_job_runner.py:446} INFO - [backfill progress] | finished run 0 of 1 | tasks waiting: 4 | succeeded: 1 | running: 0 | failed: 1 | skipped: 0 | deadlocked: 0 | not ready: 4
+[2026-09-20T06:50:51.463+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.split backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
+[2026-09-20T06:50:51.484+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.scale backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
+[2026-09-20T06:50:51.497+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.train backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
+[2026-09-20T06:50:51.512+0000] {backfill_job_runner.py:534} ERROR - Task instance <TaskInstance: wdbc_pipeline.report backfill__2026-08-26T00:00:00+00:00 [upstream_failed]> with state upstream_failed
+[2026-09-20T06:50:51.548+0000] {dagrun.py:774} ERROR - Marking run <DagRun wdbc_pipeline @ 2026-08-26 00:00:00+00:00: backfill__2026-08-26T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> failed
+[2026-09-20T06:50:51.553+0000] {dagrun.py:846} INFO - DagRun Finished: dag_id=wdbc_pipeline, execution_date=2026-08-26 00:00:00+00:00, run_id=backfill__2026-08-26T00:00:00+00:00, run_start_date=2026-09-20 06:50:32.156030+00:00, run_end_date=2026-09-20 06:50:51.553172+00:00, run_duration=19.397142, state=failed, external_trigger=False, run_type=backfill, data_interval_start=2026-08-26 00:00:00+00:00, data_interval_end=2026-08-27 00:00:00+00:00, dag_hash=None
+[2026-09-20T06:50:51.556+0000] {backfill_job_runner.py:446} INFO - [backfill progress] | finished run 1 of 1 | tasks waiting: 0 | succeeded: 1 | running: 0 | failed: 5 | skipped: 0 | deadlocked: 0 | not ready: 0
 Traceback (most recent call last):
   File "/home/airflow/.local/bin/airflow", line 8, in <module>
     sys.exit(main())
@@ -59,4 +60,5 @@ DAG ID         Task ID    Run ID                                 Try number
 wdbc_pipeline  report     backfill__2026-08-26T00:00:00+00:00             1
 wdbc_pipeline  scale      backfill__2026-08-26T00:00:00+00:00             1
 wdbc_pipeline  split      backfill__2026-08-26T00:00:00+00:00             1
+wdbc_pipeline  train      backfill__2026-08-26T00:00:00+00:00             1
 wdbc_pipeline  validate   backfill__2026-08-26T00:00:00+00:00             1

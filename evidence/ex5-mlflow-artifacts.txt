@@ -1,0 +1,5 @@
+  model/MLmodel 526
+  model/conda.yaml 192
+  model/model.pkl 1588
+  model/python_env.yaml 120
+  model/requirements.txt 81

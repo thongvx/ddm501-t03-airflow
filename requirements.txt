@@ -11,3 +11,12 @@
 apache-airflow==2.8.4
 pandas==2.1.4
 pyarrow==14.0.2
+
+# The train task. mlflow-skinny is the tracking client without the server's
+# Flask/SQLAlchemy/alembic, which would fight the versions Airflow pins above.
+# Same MLflow and scikit-learn pins as Tutorial 02.
+#
+# Without a tracking server the DAG writes to ./mlruns, which `mlflow ui`
+# can read. To get the server instead, use the Docker route.
+mlflow-skinny==2.19.0
+scikit-learn==1.6.0

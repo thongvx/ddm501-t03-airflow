@@ -8,6 +8,9 @@
 #     AIRFLOW_UID=1000                # the number `id -u` prints
 #
 # Then open http://127.0.0.1:18080 and log in as `admin`.
+#
+# Airflow UI   http://127.0.0.1:18080     (user `admin`)
+# MLflow UI    http://127.0.0.1:15030     (no login)
 
 name: ddm501-t03
 
@@ -26,6 +29,16 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+      # Read by the train task. Unset (the local venv route) means the DAG
+      # falls back to a ./mlruns folder instead of a server.
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      # MLflow tags each run with the current git commit if it can find one.
+      # There is no git in this image, and GitPython says so at length in the
+      # middle of the train log. Nothing here needs the commit.
+      GIT_PYTHON_REFRESH: quiet
+    depends_on:
+      mlflow:
+        condition: service_healthy
     user: "${AIRFLOW_UID:-50000}:0"
     volumes:
       - ./dags:/opt/airflow/dags
@@ -40,3 +53,49 @@ services:
       retries: 20
       start_period: 60s
     restart: unless-stopped
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: Dockerfile.mlflow
+    image: ddm501-t03-mlflow:2.19.0
+    container_name: ddm501-t03-mlflow
+    command:
+      - mlflow
+      - server
+      - --backend-store-uri
+      - sqlite:////mlflow/mlflow.db
+      # --serve-artifacts means the client uploads through this server, so
+      # Airflow needs no access to the artifact folder itself. One less shared
+      # mount to get the permissions wrong on.
+      - --serve-artifacts
+      - --artifacts-destination
+      - /mlflow/artifacts
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+    ports:
+      # 15030 follows Lab 2's numbering (its MLflow is on 15020), and stays off
+      # 5000, which macOS gives to the AirPlay receiver.
+      - "15030:5000"
+    volumes:
+      # A named volume, not ./mlflow. A bind mount here would be created by the
+      # daemon and end up root-owned on Linux, where the host UID is not mapped
+      # for you the way Docker Desktop does it -- you would need sudo to so much
+      # as delete it. Nothing outside this container reads the store directly
+      # (artifacts go through --serve-artifacts), so there is no reason to
+      # expose it to the host. `docker compose down -v` resets it.
+      - mlflow-store:/mlflow
+    healthcheck:
+      # No curl in python:3.11-slim, so ask Python to make the request.
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:5000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  mlflow-store:

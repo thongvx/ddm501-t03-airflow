@@ -1,7 +1,8 @@
 # Báo cáo Tutorial 03 — Airflow
 
-Toàn bộ 4 bài tập trong `README.md` đã được chạy và kiểm chứng. Log gốc của từng lần
-chạy nằm trong thư mục [`evidence/`](evidence/).
+Toàn bộ 4 bài tập trong `README.md` đã được chạy và kiểm chứng, cộng thêm một phần mở
+rộng: task `train` ghi metric vào MLflow. Log gốc của từng lần chạy nằm trong thư mục
+[`evidence/`](evidence/).
 
 ## Môi trường
 
@@ -10,11 +11,13 @@ Airflow 2.8.4 của tutorial cần Python 3.11:
 
 | | |
 |---|---|
-| Image | `ddm501-t03-airflow:2.8.4` (build từ `Dockerfile`) |
 | Airflow | 2.8.4, Python 3.11, `SequentialExecutor`, SQLite |
+| MLflow | 2.19.0 — server riêng một container, backend SQLite |
 | pandas / pyarrow / numpy | 2.1.4 / 14.0.2 / 1.24.4 |
-| Web UI | <http://127.0.0.1:18080> — scheduler, triggerer, metadatabase đều `healthy` |
-| DAG | `wdbc_pipeline` nạp không lỗi import |
+| scikit-learn | 1.6.0 |
+| Airflow UI | <http://127.0.0.1:18080> — scheduler, triggerer, metadatabase đều `healthy` |
+| MLflow UI | <http://127.0.0.1:15030> |
+| DAG | `wdbc_pipeline`, 6 task, nạp không lỗi import |
 | Dữ liệu vào | `data/raw/wdbc.csv` — 570 dòng, 32 cột |
 
 Chạy lại từ đầu:
@@ -28,25 +31,30 @@ docker compose exec airflow airflow dags test wdbc_pipeline 2026-08-25
 
 Chạy `airflow dags test wdbc_pipeline 2026-08-25` hai lần.
 
-Cả hai lần đều thành công cả 5 task (`ingest → validate → split → scale → report`):
-570 dòng vào, 6 dòng bị loại (1.05%), còn 564 dòng sạch, chia 441 train / 123 test,
-scaler fit trên 441 dòng train.
+Cả hai lần đều thành công cả 6 task (`ingest → validate → split → scale → train →
+report`): 570 dòng vào, 6 dòng bị loại (1.05%), còn 564 dòng sạch, chia 441 train /
+123 test, scaler fit trên 441 dòng train.
 
-**Kết quả kiểm chứng:** so sánh SHA-256 của toàn bộ 10 file đầu ra sau mỗi lần chạy
-cho kết quả **giống nhau từng byte**, và `history.jsonl` **vẫn chỉ có 1 dòng** cho
-ngày `2026-08-25`.
+**Kết quả kiểm chứng:** so sánh SHA-256 của toàn bộ file đầu ra sau mỗi lần chạy cho
+kết quả **giống nhau từng byte** (kể cả `metrics.json` mới), `history.jsonl` **vẫn chỉ
+có 1 dòng** cho ngày `2026-08-25`, và MLflow **vẫn chỉ có 1 run** cho ngày đó.
 
 ```
 $ diff evidence/ex1-checksums-run1.txt evidence/ex1-checksums-run2.txt
 (không có khác biệt)
+
+MLflow sau run1: 1 run(s): ['2026-08-25']
+MLflow sau run2: 1 run(s): ['2026-08-25']
 ```
 
-Hai lý do khiến việc này đúng, đọc được trong `dags/wdbc_pipeline.py`:
+Ba lý do khiến việc này đúng:
 
 - `split` chia train/test bằng cách **hash `sample_id`** (`sha256 % 100 < 20`) chứ
   không dùng random seed, nên một dòng luôn rơi vào cùng một phía, trên mọi máy.
-- `report` **lọc bỏ dòng cũ cùng `ds`** trước khi ghi lại `history.jsonl`, nên chạy
-  lại một ngày không sinh thêm dòng trùng.
+- `report` **lọc bỏ dòng cũ cùng `ds`** trước khi ghi lại `history.jsonl`.
+- `train` **xoá run MLflow cũ có cùng tag `ds`** trước khi ghi run mới, đúng quy tắc
+  `report` áp cho `history.jsonl`. Nếu không làm vậy thì chạy lại một ngày sẽ để lại
+  hai run mâu thuẫn nhau trong MLflow.
 
 Bằng chứng: `ex1-run1.log`, `ex1-run2.log`, `ex1-checksums-run1.txt`, `ex1-checksums-run2.txt`.
 
@@ -63,15 +71,25 @@ Immediate failure requested. Marking task as FAILED.
 
 Con số 13.0% là 68 dòng bị làm hỏng cộng với 6 dòng vốn đã xấu trong dữ liệu gốc.
 
-**Điểm đáng chú ý:** DAG khai báo `retries: 3`, tức là task được phép chạy tới 4 lần.
-Nhưng log của lần chạy này ghi `Starting attempt 1 of 4` rồi dừng luôn ở
-`Immediate failure requested`, và trên đĩa chỉ có duy nhất `attempt=1.log`. Đó là tác
-dụng của `AirflowFailException`: một file hỏng thì thử lại lần thứ tư vẫn hỏng, nên
-retry bị bỏ qua có chủ đích. Ba task phía sau chuyển thành `upstream_failed` chứ không
-chạy trên dữ liệu rác.
+**Retry bị bỏ qua có chủ đích.** DAG khai báo `retries: 3`, tức task được phép chạy tới
+4 lần. Nhưng log ghi `Starting attempt 1 of 4` rồi dừng luôn ở `Immediate failure
+requested`, và trên đĩa chỉ có duy nhất `attempt=1.log`. Đó là tác dụng của
+`AirflowFailException`: một file hỏng thì thử lần thứ tư vẫn hỏng.
 
-Sau `python scripts/corrupt_extract.py --repair`, `wdbc.csv` khớp SHA-256 với bản
-backup, chạy lại `2026-08-25` thì thành công và đầu ra **giống từng byte** với bài 1.
+**Dữ liệu rác không bao giờ tới được model.** Vì `train` nằm sau `validate`, nó dừng ở
+trạng thái `upstream_failed` cùng với `split`, `scale`, `report`. Không có model nào
+được train trên 13% dòng bị loại, và MLflow không có run nào cho ngày đó:
+
+```
+| validate | failed          |
+| split    | upstream_failed |
+| scale    | upstream_failed |
+| train    | upstream_failed |
+| report   | upstream_failed |
+```
+
+Sau `--repair`, `wdbc.csv` khớp SHA-256 với bản backup, chạy lại `2026-08-25` thì thành
+công và đầu ra **giống từng byte** với bài 1.
 
 Bằng chứng: `ex2-corrupt.log`, `ex2-run-failed.log`, `ex2-task-states.txt`,
 `ex2-repair.log`, `ex2-run-after-repair.log`, `ex2-checksums-after-repair.txt`.
@@ -82,16 +100,10 @@ Bằng chứng: `ex2-corrupt.log`, `ex2-run-failed.log`, `ex2-task-states.txt`,
 airflow dags backfill wdbc_pipeline -s 2026-08-22 -e 2026-08-24
 ```
 
-Kết thúc với `finished run 3 of 3 | succeeded: 15 | failed: 0`. Sinh ra đúng ba thư mục
-`data/staging/2026-08-22`, `2026-08-23`, `2026-08-24`, và `history.jsonl` có thêm ba
-dòng (tổng 4 dòng, kể cả `2026-08-25` từ bài 1):
-
-```json
-{"ds": "2026-08-25", "clean_rows": 564, "train": 441, "test": 123, ...}
-{"ds": "2026-08-22", "clean_rows": 564, "train": 441, "test": 123, ...}
-{"ds": "2026-08-23", "clean_rows": 564, "train": 441, "test": 123, ...}
-{"ds": "2026-08-24", "clean_rows": 564, "train": 441, "test": 123, ...}
-```
+Kết thúc với `finished run 3 of 3 | succeeded: 18 | failed: 0` — 18 task, tức 6 task
+nhân 3 ngày. Sinh ra đúng ba thư mục `data/staging/2026-08-22`, `2026-08-23`,
+`2026-08-24`, `history.jsonl` có thêm ba dòng (tổng 4 dòng, kể cả `2026-08-25` từ bài
+1), và MLflow có 4 run, mỗi ngày một run.
 
 Các con số giống nhau giữa bốn ngày là hợp lý: `ingest` đọc cùng một file nguồn tĩnh,
 `ds` chỉ quyết định thư mục đầu ra. Điểm cần thấy ở đây là **mỗi ngày có thư mục riêng,
@@ -115,34 +127,111 @@ backfill__2026-08-26  -> failed
 ```
 
 Bấm vào task `validate` đỏ của `2026-08-26` rồi mở tab **Logs** cho ra traceback đầy đủ
-của đúng một task, đúng một ngày, không cần SSH vào đâu — nội dung này được lưu lại ở
-`ex4-validate-task-log.txt`.
+của đúng một task, đúng một ngày, không cần SSH vào đâu.
 
 **Một điều phát hiện khi làm bài này:** `airflow dags test` chỉ in log ra terminal,
 **không** ghi file log mà UI đọc. Vì vậy lần lỗi tạo bằng `dags test` ở bài 2 hiện
 trong Grid view nhưng tab Logs lại báo `Could not read served logs: 404`. Để bài 4 có
 log thật sự đọc được trên UI, lần lỗi ở `2026-08-26` được tạo bằng `dags backfill` trên
-file đã làm hỏng — backfill chạy task qua executor nên có ghi
-`logs/dag_id=wdbc_pipeline/run_id=backfill__2026-08-26.../task_id=validate/attempt=1.log`.
-Dùng ngày `2026-08-26` riêng để bốn ngày của bài 1 và bài 3 vẫn xanh.
-
-Sau khi tạo xong lần lỗi đó, `wdbc.csv` đã được `--repair` về nguyên trạng.
+file đã làm hỏng — backfill chạy task qua executor nên có ghi file log. Dùng ngày
+`2026-08-26` riêng để bốn ngày của bài 1 và bài 3 vẫn xanh.
 
 Bằng chứng: `ex4-ui-health.json`, `ex4-ui-grid-data.txt`, `ex4-validate-task-log.txt`,
-`ex4-backfill-failed.log`.
+`ex4-task-states.txt`, `ex4-backfill-failed.log`.
+
+## Phần mở rộng — task `train` ghi metric vào MLflow
+
+`train` nằm giữa `scale` và `report`: fit logistic regression trên tập train đã scale,
+đánh giá trên tập test, rồi ghi params, metrics và cả model vào MLflow ở experiment
+`wdbc_pipeline`, gắn tag `ds`.
+
+Kết quả trên tập test 123 dòng (nhãn dương là `M` — khối u ác tính, lớp đáng bắt):
+
+| accuracy | precision | recall | f1 | roc_auc |
+|---|---|---|---|---|
+| 0.95122 | 0.959184 | 0.921569 | 0.94 | 0.995643 |
+
+Model được log đầy đủ nên tải lại được, không chỉ có metric:
+
+```
+model/MLmodel  model/model.pkl  model/conda.yaml  model/python_env.yaml  model/requirements.txt
+```
+
+Ba quyết định thiết kế đáng nói:
+
+**Train trên file đã scale, không phải file thô.** `scale` fit scaler chỉ trên tập
+train, nên `train.parquet` / `test.parquet` là cặp duy nhất không bị rò rỉ thông tin
+của tập test vào bước chuẩn hoá.
+
+**Giữ được tính idempotent của bài 1.** `metrics.json` làm tròn 6 chữ số thập phân để
+chạy lại một ngày ghi ra đúng cùng bytes. MLflow run id **không** được đưa vào
+`summary.json` — nó đổi mỗi lần chạy nên sẽ phá vỡ bài 1. Run id chỉ xuất hiện trong
+log của task và trong XCom; muốn tìm run của một ngày thì lọc theo tag `ds`.
+
+**Import nặng nằm trong task, không nằm ở đầu file.** Scheduler parse lại mọi file
+trong thư mục DAG liên tục và không cần đến sklearn; tiến trình task import một lần,
+đúng lúc cần.
+
+Bằng chứng: `ex5-mlflow-runs.txt`, `ex5-mlflow-artifacts.txt`.
+
+## Thứ tự khởi động và tính tương thích Linux
+
+**MLflow không phải chờ service nào.** Khác Lab 2 (MLflow ở đó phụ thuộc Postgres và
+MinIO), server ở đây dùng SQLite trong một volume của chính nó, nên không có phụ thuộc
+nào để chờ. Chiều phụ thuộc là chiều còn lại: **Airflow phải chờ MLflow**, và nó chờ
+tới trạng thái `healthy` chứ không chỉ `started`:
+
+```
+Container ddm501-t03-mlflow Starting
+Container ddm501-t03-mlflow Started
+Container ddm501-t03-mlflow Waiting     <- compose dừng ở đây
+Container ddm501-t03-mlflow Healthy     <- tới khi healthcheck xanh
+Container ddm501-t03-airflow Starting   <- rồi mới khởi động Airflow
+```
+
+`depends_on` chỉ chi phối lúc khởi động. Nếu MLflow chết giữa lúc pipeline đang chạy
+thì `train` sẽ lỗi kết nối — và vì đó là exception thường chứ không phải
+`AirflowFailException`, nó được retry 3 lần với exponential backoff theo `default_args`.
+Đây là đúng hành vi mong muốn: sự cố tạm thời thì thử lại, dữ liệu hỏng thì bỏ ngay.
+
+Về Linux, ba điểm đã xử lý và kiểm chứng:
+
+1. **MLflow store dùng named volume, không dùng bind mount.** Nếu mount `./mlflow` thì
+   trên Linux thư mục đó do daemon tạo và thuộc quyền root — muốn xoá cũng phải `sudo`,
+   vì Linux không tự map UID host như Docker Desktop. Không có gì ngoài container cần
+   đọc store đó (artifact đi qua `--serve-artifacts`), nên không có lý do để phơi nó ra
+   host. Reset bằng `docker compose down -v`.
+2. **`AIRFLOW_UID` thay thế đúng.** `AIRFLOW_UID=1000 docker compose config` cho
+   `user: '1000:0'`; không có `.env` thì mặc định `50000:0`. Container chạy dưới UID
+   thường vẫn ghi được vào bind mount `./data`.
+3. **Không dùng cú pháp chỉ có trên Docker Desktop.** Không có
+   `host.docker.internal`, không có `:cached` / `:delegated`, không ghim `platform:`.
+
+Cần nói rõ giới hạn: các kiểm tra trên chạy từ macOS, nên chúng xác nhận phần *cấu
+hình* đúng cho Linux, nhưng **không** thay thế được một lần chạy thật trên Linux —
+Docker Desktop tự map quyền sở hữu bind mount, còn Linux thì không. Trên Linux vẫn phải
+tạo `.env` trước như README ghi:
+
+```bash
+echo "AIRFLOW_UID=$(id -u)" > .env
+```
+
+Bằng chứng: `ex6-linux-portability.txt`, `startup-order.log`.
 
 ## Thay đổi so với repo gốc
 
-Chỉ một thay đổi về cấu hình, trong `docker-compose.yml`:
+| File | Thay đổi | Vì sao |
+|---|---|---|
+| `docker-compose.yml` | mount thêm `./scripts` | Bài 2 và 4 cần chạy `corrupt_extract.py` nhắm vào extract đang được mount; compose gốc chỉ mount `dags`, `data`, `logs` nên hai bài này không chạy được theo cách Docker |
+| `docker-compose.yml` | thêm service `mlflow` (port 15030, named volume), `depends_on: service_healthy`, biến `MLFLOW_TRACKING_URI`, `GIT_PYTHON_REFRESH=quiet` | Phần mở rộng MLflow |
+| `Dockerfile` | thêm `mlflow-skinny==2.19.0`, `scikit-learn==1.6.0`, chạy `pip check` | Client tracking cho task `train`. Dùng `mlflow-skinny` vì `mlflow` đầy đủ kéo theo Flask/SQLAlchemy/alembic riêng, xung đột với version Airflow 2.8.4 ghim. `pip check` cho build đổ ngay nếu sau này có xung đột |
+| `Dockerfile.mlflow` | file mới | Server MLflow ở image riêng, không tranh dependency với Airflow |
+| `dags/wdbc_pipeline.py` | thêm task `train`, `report` nhận thêm tham số | Phần mở rộng MLflow |
+| `requirements.txt` | thêm 2 pin trên | Cho cách chạy venv local |
+| `.gitignore`, `.dockerignore` | thêm `mlruns/`, `.DS_Store` | `mlruns/` là nơi DAG ghi khi không có tracking server |
 
-```yaml
-- ./scripts:/opt/airflow/scripts
-```
-
-`docker-compose.yml` vốn chỉ mount `dags`, `data`, `logs`. Bài 2 và bài 4 cần chạy
-`scripts/corrupt_extract.py` nhắm vào `data/raw/wdbc.csv` đang được mount, nên khi chạy
-theo cách Docker thì `scripts/` cũng phải nằm trong container. Không sửa gì trong
-`dags/wdbc_pipeline.py` hay `scripts/corrupt_extract.py`.
+Port 15030 theo quy ước của Lab 2 (MLflow ở đó dùng 15020) và tránh 5000 vì macOS dành
+port đó cho AirPlay receiver.
 
 Lưu ý: `.gitignore` loại `data/staging/` và `logs/` khỏi repo, nên đầu ra của pipeline
 không được commit — đó là lý do các bằng chứng được gom vào `evidence/`.

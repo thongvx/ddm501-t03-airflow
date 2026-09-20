@@ -1,50 +1,64 @@
-[2026-09-20T04:19:36.644+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags
-[2026-09-20T04:19:37.414+0000] {dag.py:4080} INFO - dagrun id: wdbc_pipeline
-[2026-09-20T04:19:37.450+0000] {dag.py:4096} INFO - created dagrun <DagRun wdbc_pipeline @ 2026-08-25 00:00:00+00:00: manual__2026-08-25T00:00:00+00:00, state:running, queued_at: None. externally triggered: False>
-[2026-09-20T04:19:37.473+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=ingest map_index=-1
-[2026-09-20T04:19:37.473+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.ingest manual__2026-08-25T00:00:00+00:00 [scheduled]>
-[2026-09-20 04:19:37,575] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='ingest' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:37.575+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='ingest' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:37.644+0000] {wdbc_pipeline.py:66} INFO - ingested 570 rows, 32 columns
-[2026-09-20 04:19:37,645] {python.py:202} INFO - Done. Returned value was: {'rows': 570, 'cols': 32, 'path': '/opt/airflow/data/staging/2026-08-25/raw.parquet'}
-[2026-09-20T04:19:37.645+0000] {python.py:202} INFO - Done. Returned value was: {'rows': 570, 'cols': 32, 'path': '/opt/airflow/data/staging/2026-08-25/raw.parquet'}
-[2026-09-20T04:19:37.685+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=ingest, execution_date=20260825T000000, start_date=, end_date=20260920T041937
-[2026-09-20T04:19:37.701+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=ingest map_index=-1
-[2026-09-20T04:19:37.751+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=validate map_index=-1
-[2026-09-20T04:19:37.751+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.validate manual__2026-08-25T00:00:00+00:00 [scheduled]>
-[2026-09-20 04:19:37,801] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:37.801+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:37.852+0000] {wdbc_pipeline.py:89} INFO - validation: {'null': 2, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}  (1.05% of rows rejected)
-[2026-09-20 04:19:37,909] {python.py:202} INFO - Done. Returned value was: {'path': '/opt/airflow/data/staging/2026-08-25/clean.parquet', 'clean_rows': 564, 'null': 2, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}
-[2026-09-20T04:19:37.909+0000] {python.py:202} INFO - Done. Returned value was: {'path': '/opt/airflow/data/staging/2026-08-25/clean.parquet', 'clean_rows': 564, 'null': 2, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}
-[2026-09-20T04:19:37.951+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=validate, execution_date=20260825T000000, start_date=, end_date=20260920T041937
-[2026-09-20T04:19:37.958+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=validate map_index=-1
-[2026-09-20T04:19:37.968+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=split map_index=-1
-[2026-09-20T04:19:37.968+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.split manual__2026-08-25T00:00:00+00:00 [scheduled]>
-[2026-09-20 04:19:37,986] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='split' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:37.986+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='split' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:38.020+0000] {wdbc_pipeline.py:124} INFO - split: 441 train / 123 test
-[2026-09-20 04:19:38,020] {python.py:202} INFO - Done. Returned value was: {'train': 441, 'test': 123}
-[2026-09-20T04:19:38.020+0000] {python.py:202} INFO - Done. Returned value was: {'train': 441, 'test': 123}
-[2026-09-20T04:19:38.036+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=split, execution_date=20260825T000000, start_date=, end_date=20260920T041938
-[2026-09-20T04:19:38.042+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=split map_index=-1
-[2026-09-20T04:19:38.051+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=scale map_index=-1
-[2026-09-20T04:19:38.052+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.scale manual__2026-08-25T00:00:00+00:00 [scheduled]>
-[2026-09-20 04:19:38,069] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='scale' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:38.069+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='scale' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:38.116+0000] {wdbc_pipeline.py:142} INFO - scaled with statistics from 441 training rows
-[2026-09-20 04:19:38,117] {python.py:202} INFO - Done. Returned value was: {'scaled_columns': 30, 'fitted_on': 441}
-[2026-09-20T04:19:38.117+0000] {python.py:202} INFO - Done. Returned value was: {'scaled_columns': 30, 'fitted_on': 441}
-[2026-09-20T04:19:38.133+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=scale, execution_date=20260825T000000, start_date=, end_date=20260920T041938
-[2026-09-20T04:19:38.138+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=scale map_index=-1
-[2026-09-20T04:19:38.147+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=report map_index=-1
-[2026-09-20T04:19:38.148+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.report manual__2026-08-25T00:00:00+00:00 [scheduled]>
-[2026-09-20 04:19:38,169] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='report' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:38.169+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='report' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
-[2026-09-20T04:19:38.172+0000] {wdbc_pipeline.py:157} INFO - summary: {"bad_label": 1, "clean_rows": 564, "ds": "2026-08-25", "duplicate": 1, "fitted_on": 441, "negative": 1, "null": 2, "outlier": 1, "scaled_columns": 30, "test": 123, "train": 441}
-[2026-09-20 04:19:38,172] {python.py:202} INFO - Done. Returned value was: {"bad_label": 1, "clean_rows": 564, "ds": "2026-08-25", "duplicate": 1, "fitted_on": 441, "negative": 1, "null": 2, "outlier": 1, "scaled_columns": 30, "test": 123, "train": 441}
-[2026-09-20T04:19:38.172+0000] {python.py:202} INFO - Done. Returned value was: {"bad_label": 1, "clean_rows": 564, "ds": "2026-08-25", "duplicate": 1, "fitted_on": 441, "negative": 1, "null": 2, "outlier": 1, "scaled_columns": 30, "test": 123, "train": 441}
-[2026-09-20T04:19:38.178+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=report, execution_date=20260825T000000, start_date=, end_date=20260920T041938
-[2026-09-20T04:19:38.183+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=report map_index=-1
-[2026-09-20T04:19:38.185+0000] {dagrun.py:795} INFO - Marking run <DagRun wdbc_pipeline @ 2026-08-25 00:00:00+00:00: manual__2026-08-25T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> successful
-[2026-09-20T04:19:38.186+0000] {dagrun.py:846} INFO - DagRun Finished: dag_id=wdbc_pipeline, execution_date=2026-08-25 00:00:00+00:00, run_id=manual__2026-08-25T00:00:00+00:00, run_start_date=2026-08-25 00:00:00+00:00, run_end_date=2026-09-20 04:19:38.185886+00:00, run_duration=2261978.185886, state=success, external_trigger=False, run_type=manual, data_interval_start=2026-08-24 00:00:00+00:00, data_interval_end=2026-08-25 00:00:00+00:00, dag_hash=None
+[2026-09-20T06:46:18.308+0000] {dagbag.py:540} INFO - Filling up the DagBag from /opt/airflow/dags
+[2026-09-20T06:46:18.944+0000] {dag.py:4080} INFO - dagrun id: wdbc_pipeline
+[2026-09-20T06:46:18.982+0000] {dag.py:4096} INFO - created dagrun <DagRun wdbc_pipeline @ 2026-08-25 00:00:00+00:00: manual__2026-08-25T00:00:00+00:00, state:running, queued_at: None. externally triggered: False>
+[2026-09-20T06:46:19.016+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=ingest map_index=-1
+[2026-09-20T06:46:19.017+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.ingest manual__2026-08-25T00:00:00+00:00 [scheduled]>
+[2026-09-20 06:46:19,141] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='ingest' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.141+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='ingest' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.192+0000] {wdbc_pipeline.py:73} INFO - ingested 570 rows, 32 columns
+[2026-09-20 06:46:19,192] {python.py:202} INFO - Done. Returned value was: {'rows': 570, 'cols': 32, 'path': '/opt/airflow/data/staging/2026-08-25/raw.parquet'}
+[2026-09-20T06:46:19.192+0000] {python.py:202} INFO - Done. Returned value was: {'rows': 570, 'cols': 32, 'path': '/opt/airflow/data/staging/2026-08-25/raw.parquet'}
+[2026-09-20T06:46:19.226+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=ingest, execution_date=20260825T000000, start_date=, end_date=20260920T064619
+[2026-09-20T06:46:19.234+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=ingest map_index=-1
+[2026-09-20T06:46:19.250+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=validate map_index=-1
+[2026-09-20T06:46:19.250+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.validate manual__2026-08-25T00:00:00+00:00 [scheduled]>
+[2026-09-20 06:46:19,282] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.282+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.351+0000] {wdbc_pipeline.py:96} INFO - validation: {'null': 2, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}  (1.05% of rows rejected)
+[2026-09-20 06:46:19,391] {python.py:202} INFO - Done. Returned value was: {'path': '/opt/airflow/data/staging/2026-08-25/clean.parquet', 'clean_rows': 564, 'null': 2, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}
+[2026-09-20T06:46:19.391+0000] {python.py:202} INFO - Done. Returned value was: {'path': '/opt/airflow/data/staging/2026-08-25/clean.parquet', 'clean_rows': 564, 'null': 2, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}
+[2026-09-20T06:46:19.438+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=validate, execution_date=20260825T000000, start_date=, end_date=20260920T064619
+[2026-09-20T06:46:19.444+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=validate map_index=-1
+[2026-09-20T06:46:19.459+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=split map_index=-1
+[2026-09-20T06:46:19.459+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.split manual__2026-08-25T00:00:00+00:00 [scheduled]>
+[2026-09-20 06:46:19,480] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='split' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.480+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='split' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.519+0000] {wdbc_pipeline.py:131} INFO - split: 441 train / 123 test
+[2026-09-20 06:46:19,519] {python.py:202} INFO - Done. Returned value was: {'train': 441, 'test': 123}
+[2026-09-20T06:46:19.519+0000] {python.py:202} INFO - Done. Returned value was: {'train': 441, 'test': 123}
+[2026-09-20T06:46:19.542+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=split, execution_date=20260825T000000, start_date=, end_date=20260920T064619
+[2026-09-20T06:46:19.548+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=split map_index=-1
+[2026-09-20T06:46:19.561+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=scale map_index=-1
+[2026-09-20T06:46:19.561+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.scale manual__2026-08-25T00:00:00+00:00 [scheduled]>
+[2026-09-20 06:46:19,587] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='scale' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.587+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='scale' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.647+0000] {wdbc_pipeline.py:149} INFO - scaled with statistics from 441 training rows
+[2026-09-20 06:46:19,648] {python.py:202} INFO - Done. Returned value was: {'scaled_columns': 30, 'fitted_on': 441}
+[2026-09-20T06:46:19.648+0000] {python.py:202} INFO - Done. Returned value was: {'scaled_columns': 30, 'fitted_on': 441}
+[2026-09-20T06:46:19.666+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=scale, execution_date=20260825T000000, start_date=, end_date=20260920T064619
+[2026-09-20T06:46:19.673+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=scale map_index=-1
+[2026-09-20T06:46:19.685+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=train map_index=-1
+[2026-09-20T06:46:19.686+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.train manual__2026-08-25T00:00:00+00:00 [scheduled]>
+[2026-09-20 06:46:19,712] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='train' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:19.712+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='train' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:23.037+0000] {wdbc_pipeline.py:206} INFO - replaced earlier MLflow run 82ef7b5bee31454da7f8c39e1d031f76 for 2026-08-25
+2026/09/20 06:46:27 WARNING mlflow.models.model: Model logged without a signature and input example. Please set `input_example` parameter when logging the model to auto infer the model signature.
+🏃 View run wdbc-2026-08-25 at: http://mlflow:5000/#/experiments/1/runs/d1c4038ba002499ea32ca6c361ce33de
+🧪 View experiment at: http://mlflow:5000/#/experiments/1
+[2026-09-20T06:46:27.670+0000] {wdbc_pipeline.py:218} INFO - trained on 441 rows, tested on 123: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643}
+[2026-09-20T06:46:27.672+0000] {wdbc_pipeline.py:220} INFO - recorded as MLflow run d1c4038ba002499ea32ca6c361ce33de in experiment wdbc_pipeline
+[2026-09-20 06:46:27,674] {python.py:202} INFO - Done. Returned value was: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643, 'mlflow_run_id': 'd1c4038ba002499ea32ca6c361ce33de'}
+[2026-09-20T06:46:27.674+0000] {python.py:202} INFO - Done. Returned value was: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643, 'mlflow_run_id': 'd1c4038ba002499ea32ca6c361ce33de'}
+[2026-09-20T06:46:27.752+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=train, execution_date=20260825T000000, start_date=, end_date=20260920T064627
+[2026-09-20T06:46:27.762+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=train map_index=-1
+[2026-09-20T06:46:27.786+0000] {dag.py:4042} INFO - [DAG TEST] starting task_id=report map_index=-1
+[2026-09-20T06:46:27.787+0000] {dag.py:4045} INFO - [DAG TEST] running task <TaskInstance: wdbc_pipeline.report manual__2026-08-25T00:00:00+00:00 [scheduled]>
+[2026-09-20 06:46:27,851] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='report' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:27.851+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='report' AIRFLOW_CTX_EXECUTION_DATE='2026-08-25T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-08-25T00:00:00+00:00'
+[2026-09-20T06:46:27.857+0000] {wdbc_pipeline.py:240} INFO - summary: {"accuracy": 0.95122, "bad_label": 1, "clean_rows": 564, "ds": "2026-08-25", "duplicate": 1, "f1": 0.94, "fitted_on": 441, "negative": 1, "null": 2, "outlier": 1, "precision": 0.959184, "recall": 0.921569, "roc_auc": 0.995643, "scaled_columns": 30, "test": 123, "train": 441}
+[2026-09-20 06:46:27,857] {python.py:202} INFO - Done. Returned value was: {"accuracy": 0.95122, "bad_label": 1, "clean_rows": 564, "ds": "2026-08-25", "duplicate": 1, "f1": 0.94, "fitted_on": 441, "negative": 1, "null": 2, "outlier": 1, "precision": 0.959184, "recall": 0.921569, "roc_auc": 0.995643, "scaled_columns": 30, "test": 123, "train": 441}
+[2026-09-20T06:46:27.857+0000] {python.py:202} INFO - Done. Returned value was: {"accuracy": 0.95122, "bad_label": 1, "clean_rows": 564, "ds": "2026-08-25", "duplicate": 1, "f1": 0.94, "fitted_on": 441, "negative": 1, "null": 2, "outlier": 1, "precision": 0.959184, "recall": 0.921569, "roc_auc": 0.995643, "scaled_columns": 30, "test": 123, "train": 441}
+[2026-09-20T06:46:27.868+0000] {taskinstance.py:1149} INFO - Marking task as SUCCESS. dag_id=wdbc_pipeline, task_id=report, execution_date=20260825T000000, start_date=, end_date=20260920T064627
+[2026-09-20T06:46:27.877+0000] {dag.py:4056} INFO - [DAG TEST] end task task_id=report map_index=-1
+[2026-09-20T06:46:27.883+0000] {dagrun.py:795} INFO - Marking run <DagRun wdbc_pipeline @ 2026-08-25 00:00:00+00:00: manual__2026-08-25T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> successful
+[2026-09-20T06:46:27.912+0000] {dagrun.py:846} INFO - DagRun Finished: dag_id=wdbc_pipeline, execution_date=2026-08-25 00:00:00+00:00, run_id=manual__2026-08-25T00:00:00+00:00, run_start_date=2026-08-25 00:00:00+00:00, run_end_date=2026-09-20 06:46:27.912787+00:00, run_duration=2270787.912787, state=success, external_trigger=False, run_type=manual, data_interval_start=2026-08-24 00:00:00+00:00, data_interval_end=2026-08-25 00:00:00+00:00, dag_hash=None

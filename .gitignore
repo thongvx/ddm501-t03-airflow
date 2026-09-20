@@ -8,4 +8,5 @@ standalone_admin_password.txt
 logs/
 data/staging/
 data/raw/*.orig
+mlruns/
 .env

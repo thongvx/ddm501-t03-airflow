@@ -1,0 +1,18 @@
+# The MLflow tracking server, kept in its own image on purpose.
+#
+# Airflow 2.8.4 pins Flask, SQLAlchemy and alembic; so does the MLflow server.
+# Installing both into one image means one of them loses. The Airflow image
+# gets mlflow-skinny (client only) and talks to this container over HTTP.
+#
+# Same MLflow pin as Tutorial 02 and 02-01, so runs recorded here are readable
+# by the tooling from those labs.
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1
+
+RUN pip install --no-cache-dir "mlflow==2.19.0"
+
+# Overridden by docker-compose.yml, which passes the store locations.
+CMD ["mlflow", "--version"]

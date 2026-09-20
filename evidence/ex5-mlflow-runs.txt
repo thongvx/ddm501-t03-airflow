@@ -1,0 +1,17 @@
+# MLflow tracking server: http://127.0.0.1:15030  (experiment 'wdbc_pipeline')
+# Mot run cho moi ngay thanh cong. 2026-08-26 that bai o validate nen khong co run.
+
+4 runs
+
+ds=2026-08-22  status=FINISHED
+  params : {'model': 'LogisticRegression', 'C': '1.0', 'solver': 'lbfgs', 'max_iter': '1000', 'random_state': '0', 'features': '30'}
+  metrics: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643, 'train_rows': 441.0, 'test_rows': 123.0}
+ds=2026-08-23  status=FINISHED
+  params : {'model': 'LogisticRegression', 'C': '1.0', 'solver': 'lbfgs', 'max_iter': '1000', 'random_state': '0', 'features': '30'}
+  metrics: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643, 'train_rows': 441.0, 'test_rows': 123.0}
+ds=2026-08-24  status=FINISHED
+  params : {'model': 'LogisticRegression', 'C': '1.0', 'solver': 'lbfgs', 'max_iter': '1000', 'random_state': '0', 'features': '30'}
+  metrics: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643, 'train_rows': 441.0, 'test_rows': 123.0}
+ds=2026-08-25  status=FINISHED
+  params : {'model': 'LogisticRegression', 'C': '1.0', 'solver': 'lbfgs', 'max_iter': '1000', 'random_state': '0', 'features': '30'}
+  metrics: {'accuracy': 0.95122, 'precision': 0.959184, 'recall': 0.921569, 'f1': 0.94, 'roc_auc': 0.995643, 'train_rows': 441.0, 'test_rows': 123.0}

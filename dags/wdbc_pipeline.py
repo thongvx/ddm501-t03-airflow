@@ -1,13 +1,14 @@
 """
 DDM501 Tutorial 03 — a data pipeline that runs
 
-Five tasks: ingest -> validate -> split -> scale -> report.
+Six tasks: ingest -> validate -> split -> scale -> train -> report.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import logging
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -25,6 +26,12 @@ FEATURES_MIN = 0.0                 # every WDBC measurement is a non-negative si
 LABELS = {"M", "B"}
 MAX_BAD_FRACTION = 0.05            # above this the extract is not worth using
 TEST_FRACTION = 0.20
+
+MALIGNANT = "M"                    # the class worth catching, so the positive one
+EXPERIMENT = "wdbc_pipeline"
+# Set by docker-compose to the tracking server. Unset -- the local venv route --
+# falls back to a folder, so the DAG runs with or without a server.
+TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI") or f"file://{PROJECT / 'mlruns'}"
 
 
 def run_dir(ds: str) -> Path:
@@ -143,10 +150,86 @@ def wdbc_pipeline():
         return {"scaled_columns": len(numeric), "fitted_on": len(train)}
 
     @task
-    def report(validation: dict, split_info: dict, scaling: dict, ds: str = None) -> str:
+    def train(meta: dict, ds: str = None) -> dict:
+        """Fit a baseline classifier on the scaled split and record it in MLflow.
+
+        The two heavy imports sit inside the task on purpose. The scheduler
+        re-parses every file in the DAGs folder every few seconds, and it has no
+        use for sklearn; the task process imports it once, when it is needed.
+        """
+        import mlflow
+        import mlflow.sklearn
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.metrics import (accuracy_score, f1_score, precision_score,
+                                     recall_score, roc_auc_score)
+
+        train_frame = pd.read_parquet(run_dir(ds) / "train.parquet")
+        test_frame = pd.read_parquet(run_dir(ds) / "test.parquet")
+        features = [c for c in train_frame.columns
+                    if c not in ("sample_id", "diagnosis")]
+
+        # Train on the scaled files, not the unscaled ones: the scaler was fitted
+        # on train alone, so this is the split that has no test data baked in.
+        y_train = (train_frame["diagnosis"] == MALIGNANT).astype(int)
+        y_test = (test_frame["diagnosis"] == MALIGNANT).astype(int)
+
+        params = {"model": "LogisticRegression", "C": 1.0, "solver": "lbfgs",
+                  "max_iter": 1000, "random_state": 0, "features": len(features)}
+        model = LogisticRegression(C=params["C"], solver=params["solver"],
+                                   max_iter=params["max_iter"],
+                                   random_state=params["random_state"])
+        model.fit(train_frame[features], y_train)
+
+        predicted = model.predict(test_frame[features])
+        probability = model.predict_proba(test_frame[features])[:, 1]
+        metrics = {
+            "accuracy": accuracy_score(y_test, predicted),
+            "precision": precision_score(y_test, predicted, zero_division=0),
+            "recall": recall_score(y_test, predicted, zero_division=0),
+            "f1": f1_score(y_test, predicted, zero_division=0),
+            "roc_auc": roc_auc_score(y_test, probability),
+        }
+        # Six decimals: enough to compare models, few enough that re-running a
+        # date writes the same bytes instead of a float64 tail that drifts.
+        metrics = {k: round(float(v), 6) for k, v in metrics.items()}
+
+        mlflow.set_tracking_uri(TRACKING_URI)
+        mlflow.set_experiment(EXPERIMENT)
+        client = mlflow.MlflowClient()
+
+        # Re-running a date replaces its run instead of leaving two runs that
+        # disagree -- the same rule report() applies to history.jsonl.
+        experiment = client.get_experiment_by_name(EXPERIMENT)
+        for stale in client.search_runs([experiment.experiment_id],
+                                        filter_string=f"tags.ds = '{ds}'"):
+            client.delete_run(stale.info.run_id)
+            log.info("replaced earlier MLflow run %s for %s", stale.info.run_id, ds)
+
+        with mlflow.start_run(run_name=f"wdbc-{ds}") as run:
+            mlflow.set_tag("ds", ds)
+            mlflow.log_params(params)
+            mlflow.log_metrics({**metrics, "train_rows": len(train_frame),
+                                "test_rows": len(test_frame)})
+            mlflow.sklearn.log_model(model, artifact_path="model")
+            run_id = run.info.run_id
+
+        (run_dir(ds) / "metrics.json").write_text(
+            json.dumps({"params": params, "metrics": metrics}, indent=2))
+        log.info("trained on %d rows, tested on %d: %s", len(train_frame),
+                 len(test_frame), metrics)
+        log.info("recorded as MLflow run %s in experiment %s", run_id, EXPERIMENT)
+        return {**metrics, "mlflow_run_id": run_id}
+
+    @task
+    def report(validation: dict, split_info: dict, scaling: dict, training: dict,
+               ds: str = None) -> str:
         """One line per run, appended to a log the whole pipeline shares."""
-        summary = {"ds": ds, **validation, **split_info, **scaling}
+        summary = {"ds": ds, **validation, **split_info, **scaling, **training}
         summary.pop("path", None)
+        # The MLflow run id is new on every run. Leaving it out is what keeps
+        # re-running a date byte-identical; the run is still findable by its
+        # `ds` tag, and the train task logs the id.
+        summary.pop("mlflow_run_id", None)
         (run_dir(ds) / "summary.json").write_text(json.dumps(summary, indent=2))
 
         line = json.dumps(summary, sort_keys=True)
@@ -162,7 +245,8 @@ def wdbc_pipeline():
     split_info = split(validated)
     scaling = scale(validated)
     split_info >> scaling
-    report(validated, split_info, scaling)
+    training = train(scaling)
+    report(validated, split_info, scaling, training)
 
 
 wdbc_pipeline()
