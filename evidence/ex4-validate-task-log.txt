@@ -1,0 +1,37 @@
+a6897d7ddd7d
+*** Found local files:
+***   * /opt/airflow/logs/dag_id=wdbc_pipeline/run_id=backfill__2026-08-26T00:00:00+00:00/task_id=validate/attempt=1.log
+[2026-09-20T04:24:23.614+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]>
+[2026-09-20T04:24:23.620+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]>
+[2026-09-20T04:24:23.621+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 4
+[2026-09-20T04:24:23.634+0000] {taskinstance.py:2217} INFO - Executing <Task(_PythonDecoratedOperator): validate> on 2026-08-26 00:00:00+00:00
+[2026-09-20T04:24:23.638+0000] {standard_task_runner.py:60} INFO - Started process 916 to run task
+[2026-09-20T04:24:23.641+0000] {standard_task_runner.py:87} INFO - Running: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--job-id', '21', '--pool', 'default_pool', '--raw', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmpq5a3k7bz']
+[2026-09-20T04:24:23.644+0000] {standard_task_runner.py:88} INFO - Job 21: Subtask validate
+[2026-09-20T04:24:23.680+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [running]> on host a6897d7ddd7d
+[2026-09-20T04:24:23.741+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-26T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='backfill__2026-08-26T00:00:00+00:00'
+[2026-09-20T04:24:23.800+0000] {wdbc_pipeline.py:89} INFO - validation: {'null': 70, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}  (12.98% of rows rejected)
+[2026-09-20T04:24:23.839+0000] {taskinstance.py:2731} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
+    result = _execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 414, in _execute_callable
+    return execute_callable(context=context, **execute_callable_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/decorators/base.py", line 241, in execute
+    return_value = super().execute(context)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 200, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 217, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/dags/wdbc_pipeline.py", line 103, in validate
+    raise AirflowFailException(
+airflow.exceptions.AirflowFailException: 13.0% of rows rejected, limit is 5%
+[2026-09-20T04:24:23.845+0000] {taskinstance.py:1149} INFO - Immediate failure requested. Marking task as FAILED. dag_id=wdbc_pipeline, task_id=validate, execution_date=20260826T000000, start_date=20260920T042423, end_date=20260920T042423
+[2026-09-20T04:24:23.854+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 21 for task validate (13.0% of rows rejected, limit is 5%; 916)
+[2026-09-20T04:24:23.901+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2026-09-20T04:24:23.919+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check
