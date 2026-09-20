@@ -1,0 +1,5 @@
+# The MLflow database and artifacts land here, one folder for both.
+#
+# This file is tracked so the directory already exists and already belongs to
+# you. If Docker has to create it, it creates it as root, and MLFLOW_UID in
+# .env then cannot write to it.

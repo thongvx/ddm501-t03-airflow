@@ -29,9 +29,11 @@ TEST_FRACTION = 0.20
 
 MALIGNANT = "M"                    # the class worth catching, so the positive one
 EXPERIMENT = "wdbc_pipeline"
-# Set by docker-compose to the tracking server. Unset -- the local venv route --
-# falls back to a folder, so the DAG runs with or without a server.
-TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI") or f"file://{PROJECT / 'mlruns'}"
+# Same default as Tutorial 02's _common.py, and for the reason it gives: falling
+# back to a local ./mlruns folder instead would write runs to a place the UI you
+# have open is not reading, which is the most common way to "lose" a run. Better
+# to fail on a refused connection. docker-compose sets this to the server.
+TRACKING_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000")
 
 
 def run_dir(ds: str) -> Path:
@@ -159,6 +161,7 @@ def wdbc_pipeline():
         """
         import mlflow
         import mlflow.sklearn
+        import sklearn
         from sklearn.linear_model import LogisticRegression
         from sklearn.metrics import (accuracy_score, f1_score, precision_score,
                                      recall_score, roc_auc_score)
@@ -206,11 +209,18 @@ def wdbc_pipeline():
             log.info("replaced earlier MLflow run %s for %s", stale.info.run_id, ds)
 
         with mlflow.start_run(run_name=f"wdbc-{ds}") as run:
-            mlflow.set_tag("ds", ds)
+            # `ds` is what makes a run findable by date; the other two are the
+            # tags Tutorial 02 sets, and they answer "which data, which library
+            # version" months later when the numbers look wrong.
+            mlflow.set_tags({"ds": ds, "dataset": "wdbc-569",
+                             "sklearn": sklearn.__version__})
             mlflow.log_params(params)
             mlflow.log_metrics({**metrics, "train_rows": len(train_frame),
                                 "test_rows": len(test_frame)})
-            mlflow.sklearn.log_model(model, artifact_path="model")
+            # input_example gives the logged model a signature, so whoever loads
+            # it later can see the columns it expects without reading this file.
+            mlflow.sklearn.log_model(model, artifact_path="model",
+                                     input_example=test_frame[features].head(2))
             run_id = run.info.run_id
 
         (run_dir(ds) / "metrics.json").write_text(

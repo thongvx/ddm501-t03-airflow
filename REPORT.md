@@ -194,41 +194,53 @@ thì `train` sẽ lỗi kết nối — và vì đó là exception thường ch�
 `AirflowFailException`, nó được retry 3 lần với exponential backoff theo `default_args`.
 Đây là đúng hành vi mong muốn: sự cố tạm thời thì thử lại, dữ liệu hỏng thì bỏ ngay.
 
-Về Linux, ba điểm đã xử lý và kiểm chứng:
+Mục tiêu của phần này: `git clone` về VPS rồi `docker compose up -d` là chạy được
+ngay, không có bước thủ công nào để quên. Ban đầu repo **không** đạt mục tiêu đó, và
+lý do không thấy được trên macOS — Docker Desktop tự map quyền sở hữu bind mount nên
+nó che mất cả hai lỗi. Ba thứ phải sửa:
 
-1. **MLflow store dùng named volume, không dùng bind mount.** Nếu mount `./mlflow` thì
-   trên Linux thư mục đó do daemon tạo và thuộc quyền root — muốn xoá cũng phải `sudo`,
-   vì Linux không tự map UID host như Docker Desktop. Không có gì ngoài container cần
-   đọc store đó (artifact đi qua `--serve-artifacts`), nên không có lý do để phơi nó ra
-   host. Reset bằng `docker compose down -v`.
-2. **`AIRFLOW_UID` thay thế đúng.** `AIRFLOW_UID=1000 docker compose config` cho
-   `user: '1000:0'`; không có `.env` thì mặc định `50000:0`. Container chạy dưới UID
-   thường vẫn ghi được vào bind mount `./data`.
-3. **Không dùng cú pháp chỉ có trên Docker Desktop.** Không có
-   `host.docker.internal`, không có `:cached` / `:delegated`, không ghim `platform:`.
+1. **`.gitkeep` của `logs/` và `mlflow-data/` phải được commit.** `.gitignore` đang
+   ignore cả thư mục `logs/`, nên `logs/.gitkeep` chưa từng vào index và bản clone
+   không có `logs/`. Khi thư mục nguồn của bind mount không tồn tại, Docker tự tạo nó
+   với quyền root; container chạy UID thường thì không ghi được, và scheduler đổ ngay
+   ở file log đầu tiên. Đã đổi thành `logs/*` + `!logs/.gitkeep` cho cả hai thư mục.
+2. **Mặc định phải là root, không phải 50000.** UID 50000 là user riêng của image
+   Airflow, trên VPS nó không sở hữu gì cả, nên dù thư mục đã tồn tại thì container
+   vẫn không tạo được `data/staging/`. Giờ `user: "${AIRFLOW_UID:-0}:0"` — root ghi
+   được bind mount bất kể UID của host. Giá phải trả là file sinh ra thuộc root; ai
+   cần lấy lại quyền thì `cp .env.example .env` và điền UID của mình, còn bản thân
+   các thư mục thì đã thuộc quyền người clone nhờ điểm 1.
+3. **`HOME=/home/airflow` trong compose.** Airflow trong image được cài bằng
+   `pip install --user`, nên Python chỉ tìm thấy nó dưới home của UID đang chạy.
+   Entrypoint lo việc đó cho tiến trình chính của container, nhưng
+   `docker compose exec` **không** đi qua entrypoint — thiếu biến này thì mọi lệnh
+   trong bài tập chết với `No module named 'airflow'` ngay khi UID khác 50000. Đây là
+   hệ quả trực tiếp của điểm 2 và chỉ lộ ra khi chạy thật.
 
-Cần nói rõ giới hạn: các kiểm tra trên chạy từ macOS, nên chúng xác nhận phần *cấu
-hình* đúng cho Linux, nhưng **không** thay thế được một lần chạy thật trên Linux —
-Docker Desktop tự map quyền sở hữu bind mount, còn Linux thì không. Trên Linux vẫn phải
-tạo `.env` trước như README ghi:
+Không dùng cú pháp riêng của Docker Desktop: không `host.docker.internal`, không
+`:cached` / `:delegated`, không ghim `platform:`.
 
-```bash
-echo "AIRFLOW_UID=$(id -u)" > .env
-```
+Kiểm chứng bằng cách `git clone` repo ra thư mục khác rồi chạy từ đó, **không** tạo
+`.env`: stack lên `healthy`, pipeline chạy thành công, ghi đủ `data/staging/`, log ra
+host và run vào MLflow. Chạy lại nhánh có `.env` (UID thật) cũng được, và vẫn
+idempotent. Vẫn phải nói rõ giới hạn: các lần chạy này đều từ macOS, nên chúng chứng
+minh *cấu hình* đúng chứ không thay được một lần chạy thật trên Linux.
 
-Bằng chứng: `ex6-linux-portability.txt`, `startup-order.log`.
+Bằng chứng: `ex6-linux-portability.txt`, `ex7-fresh-clone.txt`, `startup-order.log`.
 
 ## Thay đổi so với repo gốc
 
 | File | Thay đổi | Vì sao |
 |---|---|---|
 | `docker-compose.yml` | mount thêm `./scripts` | Bài 2 và 4 cần chạy `corrupt_extract.py` nhắm vào extract đang được mount; compose gốc chỉ mount `dags`, `data`, `logs` nên hai bài này không chạy được theo cách Docker |
-| `docker-compose.yml` | thêm service `mlflow` (port 15030, named volume), `depends_on: service_healthy`, biến `MLFLOW_TRACKING_URI`, `GIT_PYTHON_REFRESH=quiet` | Phần mở rộng MLflow |
+| `docker-compose.yml` | thêm service `mlflow` (port 15030, bind mount `./mlflow-data`), `depends_on: service_healthy`, biến `MLFLOW_TRACKING_URI`, `GIT_PYTHON_REFRESH=quiet` | Phần mở rộng MLflow. Bind mount thay vì named volume để run còn lại trên đĩa và đọc được, theo cách Lab 2 làm |
+| `docker-compose.yml` | mặc định `user` thành root, thêm `HOME=/home/airflow` | Để clone về VPS là chạy được ngay — xem phần tương thích Linux ở trên |
 | `Dockerfile` | thêm `mlflow-skinny==2.19.0`, `scikit-learn==1.6.0`, chạy `pip check` | Client tracking cho task `train`. Dùng `mlflow-skinny` vì `mlflow` đầy đủ kéo theo Flask/SQLAlchemy/alembic riêng, xung đột với version Airflow 2.8.4 ghim. `pip check` cho build đổ ngay nếu sau này có xung đột |
 | `Dockerfile.mlflow` | file mới | Server MLflow ở image riêng, không tranh dependency với Airflow |
 | `dags/wdbc_pipeline.py` | thêm task `train`, `report` nhận thêm tham số | Phần mở rộng MLflow |
 | `requirements.txt` | thêm 2 pin trên | Cho cách chạy venv local |
-| `.gitignore`, `.dockerignore` | thêm `mlruns/`, `.DS_Store` | `mlruns/` là nơi DAG ghi khi không có tracking server |
+| `.gitignore`, `.dockerignore` | thêm `mlruns/`, `.DS_Store`; `logs/` và `mlflow-data/` đổi sang ignore phần nội dung nhưng giữ `.gitkeep` | `mlruns/` là nơi client MLflow ghi nếu ai đó trỏ `MLFLOW_TRACKING_URI` về thư mục. `.gitkeep` phải được commit, xem phần tương thích Linux |
+| `.env.example` | file mới | Tuỳ chọn, chỉ để đổi UID cho file sinh ra thuộc quyền mình thay vì root |
 
 Port 15030 theo quy ước của Lab 2 (MLflow ở đó dùng 15020) và tránh 5000 vì macOS dành
 port đó cho AirPlay receiver.

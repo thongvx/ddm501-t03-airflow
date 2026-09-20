@@ -1,5 +1,16 @@
-  model/MLmodel 526
-  model/conda.yaml 192
-  model/model.pkl 1588
-  model/python_env.yaml 120
-  model/requirements.txt 81
+# Model artifact cua mot run, doc tu mlflow-data/mlartifacts tren dia.
+# Co signature (30 cot co ten) nho input_example, theo chuan Tutorial 02.
+
+model/MLmodel
+model/conda.yaml
+model/input_example.json
+model/model.pkl
+model/python_env.yaml
+model/requirements.txt
+model/serving_input_example.json
+
+# Trich signature tu MLmodel:
+signature:
+  inputs: '[{"type": "double", "name": "mean_radius", "required": true}, {"type":
+    "double", "name": "mean_texture", "required": true}, {"type": "double", "name":
+    "mean_perimeter", "required": true}, {"type": "double", "name": "mean_area", "required":

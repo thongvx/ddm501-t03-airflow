@@ -4,8 +4,12 @@
 #   docker compose ps                 # wait for STATUS = healthy (about a minute)
 #   docker compose exec airflow cat /opt/airflow/standalone_admin_password.txt
 #
-# On Linux, first create a .env file next to this one containing:
-#     AIRFLOW_UID=1000                # the number `id -u` prints
+# A fresh clone runs as-is, on Linux too: both containers default to root, so
+# they can write the bind-mounted directories whatever your uid is. The files
+# they create then belong to root. If that bothers you -- it should, on a machine
+# you share -- copy .env.example to .env and put your own uid in it:
+#
+#     cp .env.example .env && sed -i "s/=1000$/=$(id -u)/" .env
 #
 # Then open http://127.0.0.1:18080 and log in as `admin`.
 #
@@ -36,10 +40,24 @@ services:
       # There is no git in this image, and GitPython says so at length in the
       # middle of the train log. Nothing here needs the commit.
       GIT_PYTHON_REFRESH: quiet
+      # Airflow and its dependencies are a `pip install --user` inside the image,
+      # which Python only finds under the home directory of the uid running it.
+      # The image's entrypoint arranges that for the container's own process, but
+      # `docker compose exec` does not go through the entrypoint -- so without
+      # this, every exercise below dies on `No module named 'airflow'` the moment
+      # the container runs as anything other than uid 50000. Setting it here
+      # covers every uid, including the root default.
+      HOME: /home/airflow
     depends_on:
       mlflow:
         condition: service_healthy
-    user: "${AIRFLOW_UID:-50000}:0"
+    # Root by default, so a fresh `git clone && docker compose up -d` writes to
+    # the bind mounts below on any machine, including a Linux VPS where your uid
+    # is not the image's own 50000. The cost is that new files under data/ and
+    # logs/ belong to root. Put your uid in .env (copy .env.example) to get them
+    # back -- the directories themselves already belong to you, because their
+    # .gitkeep is tracked and Docker never had to create them.
+    user: "${AIRFLOW_UID:-0}:0"
     volumes:
       - ./dags:/opt/airflow/dags
       - ./data:/opt/airflow/data
@@ -64,13 +82,13 @@ services:
       - mlflow
       - server
       - --backend-store-uri
-      - sqlite:////mlflow/mlflow.db
+      - sqlite:////mlflow-data/mlflow.db
       # --serve-artifacts means the client uploads through this server, so
       # Airflow needs no access to the artifact folder itself. One less shared
       # mount to get the permissions wrong on.
       - --serve-artifacts
       - --artifacts-destination
-      - /mlflow/artifacts
+      - file:///mlflow-data/mlartifacts
       - --host
       - 0.0.0.0
       - --port
@@ -79,14 +97,19 @@ services:
       # 15030 follows Lab 2's numbering (its MLflow is on 15020), and stays off
       # 5000, which macOS gives to the AirPlay receiver.
       - "15030:5000"
+    # Same story as the Airflow container above: on Linux the container writes to
+    # the bind mount as whatever uid it runs as, and root-owned files inside your
+    # own project folder cannot be deleted without sudo. Put your uid in .env.
+    # The default is right on macOS and Windows.
+    user: "${MLFLOW_UID:-0}:0"
     volumes:
-      # A named volume, not ./mlflow. A bind mount here would be created by the
-      # daemon and end up root-owned on Linux, where the host UID is not mapped
-      # for you the way Docker Desktop does it -- you would need sudo to so much
-      # as delete it. Nothing outside this container reads the store directly
-      # (artifacts go through --serve-artifacts), so there is no reason to
-      # expose it to the host. `docker compose down -v` resets it.
-      - mlflow-store:/mlflow
+      # The database and the artifacts on your disk rather than inside the
+      # container, so `docker compose down` does not throw away your runs and
+      # you can look at them. The directory ships with a .gitkeep precisely so
+      # it already exists and already belongs to you -- if Docker has to create
+      # it, it creates it as root and the non-root case above breaks on the
+      # first write.
+      - ./mlflow-data:/mlflow-data
     healthcheck:
       # No curl in python:3.11-slim, so ask Python to make the request.
       test: ["CMD", "python", "-c",
@@ -96,6 +119,3 @@ services:
       retries: 18
       start_period: 30s
     restart: unless-stopped
-
-volumes:
-  mlflow-store:

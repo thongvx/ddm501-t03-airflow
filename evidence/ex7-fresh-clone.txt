@@ -1,0 +1,47 @@
+# Gia lap VPS cua thay: clone repo ra thu muc moi, KHONG tao .env, chay tu do.
+# Day la kiem chung ma cac buoc 'docker compose config' khong the thay the.
+
+$ git clone <repo> /tmp/vpstest && cd /tmp/vpstest
+
+## Thu muc bind mount co san ngay sau clone (nho .gitkeep duoc commit)
+$ ls -d data logs mlflow-data; ls .env
+data
+logs
+mlflow-data
+ls: .env: No such file or directory
+
+## docker compose up -d
+ Container ddm501-t03-mlflow Starting 
+ Container ddm501-t03-mlflow Started 
+ Container ddm501-t03-mlflow Waiting 
+ Container ddm501-t03-mlflow Healthy 
+ Container ddm501-t03-airflow Starting 
+ Container ddm501-t03-airflow Started 
+
+$ docker compose ps
+SERVICE   STATUS
+airflow   Up 50 seconds (healthy)
+mlflow    Up About a minute (healthy)
+
+## Scheduler co loi quyen ghi log khong?
+$ docker compose logs airflow | grep -iE 'permission denied|read-only|Errno 13|find: '
+(khong dong nao khop -> khong co loi quyen ghi)
+
+## Chay pipeline bang dung lenh trong README
+$ docker compose exec airflow airflow dags test wdbc_pipeline 2026-08-25
+Marking run <DagRun wdbc_pipeline @ 2026-08-25 00:00:00+00:00: manual__2026-08-25T00:00:00+00:00, state:running, queued_at: None. externally triggered: False> successful
+
+## Ket qua ghi ra host
+$ ls data/staging/2026-08-25/ | head; find logs -name '*.log' | head -2; ls mlflow-data
+clean.parquet
+metrics.json
+raw.parquet
+rejected.parquet
+logs/scheduler/2026-09-20/wdbc_pipeline.py.log
+logs/dag_processor_manager/dag_processor_manager.log
+mlartifacts
+mlflow.db
+
+## Run da vao MLflow
+   tags.ds tags.dataset  metrics.accuracy  metrics.roc_auc   status
+2026-08-25     wdbc-569           0.95122         0.995643 FINISHED

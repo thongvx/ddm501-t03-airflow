@@ -1,17 +1,17 @@
-481e23e73354
+8c4148bdc5f8
 *** Found local files:
 ***   * /opt/airflow/logs/dag_id=wdbc_pipeline/run_id=backfill__2026-08-26T00:00:00+00:00/task_id=validate/attempt=1.log
-[2026-09-20T06:50:48.990+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]>
-[2026-09-20T06:50:49.019+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]>
-[2026-09-20T06:50:49.020+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 4
-[2026-09-20T06:50:49.081+0000] {taskinstance.py:2217} INFO - Executing <Task(_PythonDecoratedOperator): validate> on 2026-08-26 00:00:00+00:00
-[2026-09-20T06:50:49.128+0000] {standard_task_runner.py:60} INFO - Started process 1181 to run task
-[2026-09-20T06:50:49.159+0000] {standard_task_runner.py:87} INFO - Running: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--job-id', '27', '--pool', 'default_pool', '--raw', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmpwhsyvwin']
-[2026-09-20T06:50:49.173+0000] {standard_task_runner.py:88} INFO - Job 27: Subtask validate
-[2026-09-20T06:50:49.309+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [running]> on host 481e23e73354
-[2026-09-20T06:50:49.448+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-26T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='backfill__2026-08-26T00:00:00+00:00'
-[2026-09-20T06:50:49.531+0000] {wdbc_pipeline.py:96} INFO - validation: {'null': 70, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}  (12.98% of rows rejected)
-[2026-09-20T06:50:49.587+0000] {taskinstance.py:2731} ERROR - Task failed with exception
+[2026-09-20T07:20:19.698+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]>
+[2026-09-20T07:20:19.705+0000] {taskinstance.py:1979} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [queued]>
+[2026-09-20T07:20:19.705+0000] {taskinstance.py:2193} INFO - Starting attempt 1 of 4
+[2026-09-20T07:20:19.720+0000] {taskinstance.py:2217} INFO - Executing <Task(_PythonDecoratedOperator): validate> on 2026-08-26 00:00:00+00:00
+[2026-09-20T07:20:19.725+0000] {standard_task_runner.py:60} INFO - Started process 1191 to run task
+[2026-09-20T07:20:19.729+0000] {standard_task_runner.py:87} INFO - Running: ['airflow', 'tasks', 'run', 'wdbc_pipeline', 'validate', 'backfill__2026-08-26T00:00:00+00:00', '--job-id', '27', '--pool', 'default_pool', '--raw', '--subdir', 'DAGS_FOLDER/wdbc_pipeline.py', '--cfg-path', '/tmp/tmprn02a17w']
+[2026-09-20T07:20:19.733+0000] {standard_task_runner.py:88} INFO - Job 27: Subtask validate
+[2026-09-20T07:20:19.779+0000] {task_command.py:423} INFO - Running <TaskInstance: wdbc_pipeline.validate backfill__2026-08-26T00:00:00+00:00 [running]> on host 8c4148bdc5f8
+[2026-09-20T07:20:19.838+0000] {taskinstance.py:2513} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='airflow' AIRFLOW_CTX_DAG_ID='wdbc_pipeline' AIRFLOW_CTX_TASK_ID='validate' AIRFLOW_CTX_EXECUTION_DATE='2026-08-26T00:00:00+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='backfill__2026-08-26T00:00:00+00:00'
+[2026-09-20T07:20:19.886+0000] {wdbc_pipeline.py:98} INFO - validation: {'null': 70, 'negative': 1, 'bad_label': 1, 'duplicate': 1, 'outlier': 1}  (12.98% of rows rejected)
+[2026-09-20T07:20:19.924+0000] {taskinstance.py:2731} ERROR - Task failed with exception
 Traceback (most recent call last):
   File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 444, in _execute_task
     result = _execute_callable(context=context, **execute_callable_kwargs)
@@ -28,10 +28,10 @@ Traceback (most recent call last):
   File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 217, in execute_callable
     return self.python_callable(*self.op_args, **self.op_kwargs)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/airflow/dags/wdbc_pipeline.py", line 110, in validate
+  File "/opt/airflow/dags/wdbc_pipeline.py", line 112, in validate
     raise AirflowFailException(
 airflow.exceptions.AirflowFailException: 13.0% of rows rejected, limit is 5%
-[2026-09-20T06:50:49.596+0000] {taskinstance.py:1149} INFO - Immediate failure requested. Marking task as FAILED. dag_id=wdbc_pipeline, task_id=validate, execution_date=20260826T000000, start_date=20260920T065048, end_date=20260920T065049
-[2026-09-20T06:50:49.612+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 27 for task validate (13.0% of rows rejected, limit is 5%; 1181)
-[2026-09-20T06:50:49.659+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
-[2026-09-20T06:50:49.687+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check
+[2026-09-20T07:20:19.929+0000] {taskinstance.py:1149} INFO - Immediate failure requested. Marking task as FAILED. dag_id=wdbc_pipeline, task_id=validate, execution_date=20260826T000000, start_date=20260920T072019, end_date=20260920T072019
+[2026-09-20T07:20:19.937+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 27 for task validate (13.0% of rows rejected, limit is 5%; 1191)
+[2026-09-20T07:20:19.950+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2026-09-20T07:20:19.970+0000] {taskinstance.py:3312} INFO - 0 downstream tasks scheduled from follow-on schedule check

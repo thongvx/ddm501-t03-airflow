@@ -29,12 +29,21 @@ airflow standalone
 The web UI comes up on <http://127.0.0.1:8080>. `standalone` prints the admin password on first start and also writes it to
 `$AIRFLOW_HOME/standalone_admin_password.txt`.
 
-**B. Docker** — one container, built once from the `Dockerfile` beside this file:
+This route gives you no MLflow server, and `train` will not invent one — it
+expects <http://127.0.0.1:5000>, the address Tutorial 02 uses, and fails on a
+refused connection rather than writing runs somewhere you are not looking. So
+start one in its own terminal first, exactly as Tutorial 02 does:
 
 ```bash
-# On Linux only
-echo "AIRFLOW_UID=$(id -u)" > .env
+mlflow server --backend-store-uri sqlite:///mlflow.db \
+  --artifacts-destination ./mlartifacts --host 127.0.0.1 --port 5000
+```
 
+**B. Docker** — two containers, built once from the `Dockerfile` beside this file:
+
+A fresh clone runs as-is, on a Linux VPS too — there is no uid step to forget:
+
+```bash
 docker compose up -d --build
 docker compose ps        # wait for STATUS = healthy, about a minute
 docker compose exec airflow cat /opt/airflow/standalone_admin_password.txt
@@ -43,6 +52,14 @@ docker compose exec airflow cat /opt/airflow/standalone_admin_password.txt
 After the first time, `docker compose up -d` is enough — Docker reuses the
 image it already built. Add `--build` again only when you change the
 `Dockerfile`.
+
+Both containers run as root by default, which is what makes that work on any
+machine: they write to `data/`, `logs/` and `mlflow-data/` whatever your uid is.
+The files they create there belong to root. To get them back, copy
+`.env.example` to `.env` and put your own uid in it — see that file. The
+directories themselves already belong to you, because each ships a tracked
+`.gitkeep`: if Docker had to create a missing bind-mount source it would create
+it as root, and on Linux the scheduler would then fail on its first log file.
 
 <http://127.0.0.1:18080>, user `admin`. Port 18080 and not 8080, because Lab 2
 owns 8080 and you will want both running one day.
@@ -56,6 +73,12 @@ starts, so `docker compose up -d` prints `mlflow Healthy` before
 |---|---|
 | Airflow UI | <http://127.0.0.1:18080> — user `admin` |
 | MLflow UI | <http://127.0.0.1:15030> — no login |
+
+MLflow keeps its database and artifacts in `mlflow-data/`, on your disk rather
+than inside the container, so `docker compose down` does not throw away your
+runs. Port 15030 and not 5000, because macOS 12+ gives 5000 to the AirPlay
+receiver — which is why "port 5000 already in use" on a Mac is usually not
+another MLflow at all.
 
 ## Running the pipeline
 
@@ -96,8 +119,11 @@ instead — that runs the task through the executor, which does write one.
 
 `train` sits between `scale` and `report`. It fits a logistic regression on the
 scaled training split, scores it on the test split, and logs the parameters, the
-metrics and the model itself to MLflow under experiment `wdbc_pipeline`, tagged
-with the run's `ds`.
+metrics and the model itself to MLflow under experiment `wdbc_pipeline`. The run
+carries three tags: `ds` to find it by date, plus the `dataset` and `sklearn`
+tags Tutorial 02 uses, which answer "which data, which library version" months
+later. The model is logged with an `input_example`, so it arrives with a
+signature and you can see the columns it expects without reading the DAG.
 
 ```bash
 docker compose exec airflow airflow dags test wdbc_pipeline 2026-08-25

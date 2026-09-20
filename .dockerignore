@@ -5,6 +5,7 @@
 logs/
 data/staging/
 data/raw/*.orig
+mlflow-data/
 mlruns/
 airflow.db
 airflow-webserver.pid

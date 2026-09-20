@@ -5,8 +5,17 @@ airflow.db
 airflow-webserver.pid
 webserver_config.py
 standalone_admin_password.txt
-logs/
 data/staging/
 data/raw/*.orig
+
+# The bind-mounted directories: contents ignored, directory itself tracked via
+# its .gitkeep. Docker must not be the one to create these. On Linux it creates
+# a missing bind-mount source as root, and then the container cannot write to
+# it -- the scheduler fails on its first log file, which is a confusing way to
+# find out that a directory was missing.
+logs/*
+!logs/.gitkeep
+mlflow-data/*
+!mlflow-data/.gitkeep
 mlruns/
 .env

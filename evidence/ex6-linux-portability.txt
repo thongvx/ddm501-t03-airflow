@@ -1,31 +1,30 @@
-# Kiem tra tinh tuong thich Linux cua docker-compose.yml
+# Kiem tra: git clone ve VPS Linux la chay duoc ngay, khong can buoc thu cong
+# Sinh lai sau khi doi default sang root + commit .gitkeep + dat HOME cho exec
 
-## 1. Thu tu khoi dong: airflow doi mlflow HEALTHY, khong phai chi 'started'
- Volume ddm501-t03_mlflow-store Creating 
- Volume ddm501-t03_mlflow-store Created 
- Container ddm501-t03-mlflow Creating 
- Container ddm501-t03-mlflow Created 
- Container ddm501-t03-airflow Creating 
- Container ddm501-t03-airflow Created 
- Container ddm501-t03-mlflow Starting 
- Container ddm501-t03-mlflow Started 
- Container ddm501-t03-mlflow Waiting 
- Container ddm501-t03-mlflow Healthy 
- Container ddm501-t03-airflow Starting 
- Container ddm501-t03-airflow Started 
+## 1. Default khong can .env: ca hai container chay root nen ghi duoc bind mount
+$ docker compose config | grep user:
+    user: '0:0'
+    user: '0:0'
 
-## 2. Thay the AIRFLOW_UID (cach Linux dung .env)
-$ AIRFLOW_UID=1000 docker compose config | grep user:
+## 2. Van doi uid duoc neu muon file thuoc quyen minh (.env.example)
+$ AIRFLOW_UID=1000 MLFLOW_UID=1000 docker compose config | grep user:
     user: '1000:0'
-$ docker compose config | grep user:      # mac dinh, khong co .env
-    user: '50000:0'
+    user: '1000:0'
 
-## 3. Container chay duoi UID thuong ghi duoc vao bind mount
-uid=1000 gid=0(root) groups=0(root)
-ghi duoc vao ./data
+## 3. .gitkeep DUOC commit -> thu muc bind mount ton tai ngay sau clone.
+#    Neu thieu, Docker tu tao voi quyen root va container khong ghi duoc.
+$ git ls-files | grep gitkeep
+data/.gitkeep
+logs/.gitkeep
+mlflow-data/.gitkeep
 
-## 4. MLflow store la named volume -> khong tao file root-owned tren host
-volume ddm501-t03_mlflow-store -> /mlflow
+## 4. HOME=/home/airflow trong compose: airflow cai bang 'pip install --user',
+#    ma 'docker compose exec' khong di qua entrypoint. Thieu bien nay thi moi
+#    lenh cua bai tap chet voi "No module named 'airflow'" khi uid != 50000.
+$ docker compose exec airflow id -u; docker compose exec airflow airflow version
+0
+2.8.4
 
 ## 5. Khong dung cu phap chi co tren Docker Desktop
-grep -E 'host.docker.internal|:cached|:delegated|platform:' -> khong match
+$ grep -E 'host.docker.internal|:cached|:delegated|platform:' docker-compose.yml
+khong match
